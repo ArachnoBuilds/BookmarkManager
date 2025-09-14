@@ -19,4 +19,10 @@ public static class Errors
         public static Error InvalidAuthor =>
             new("Domain.Errors.Comment.InvalidAuthor", "The author provided is not valid.");
     }
+
+    public static class Tag
+    {
+        public static Error InvalidName =>
+            new("Domain.Errors.Tag.InvalidName", "The name provided is not valid.");
+    }
 }
