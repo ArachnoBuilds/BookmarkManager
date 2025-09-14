@@ -5,12 +5,17 @@ namespace Domain.Entities;
 
 public sealed class Bookmark : AggregateRoot, IAuditableEntity
 {
+    private readonly List<Comment> comments = [];
+    private readonly List<Guid> tags = [];
+
     public string Url { get; set; }
     public string Title { get; set; }
     public string? Description { get; set; }
     public bool IsPublic { get; set; }
     public DateTime CreatedOnUtc { get; set; }
     public DateTime? ModifiedOnUtc { get; set; }
+    public IReadOnlyList<Comment> Comments => comments;
+    public IReadOnlyList<Guid> Tags => tags;
 
     private Bookmark(Guid id, string url, string title, string? description, bool isPublic)
         : base(id)
@@ -32,5 +37,26 @@ public sealed class Bookmark : AggregateRoot, IAuditableEntity
             return Result.Failure<Bookmark>(Errors.Bookmark.InvalidTitle);
 
         return new Bookmark(id, url, title, description, isPublic);
+    }
+
+    public Result AddComment(Guid id, string content, Guid author)
+    {
+        var result = Comment.Create(id, content, author);
+        if (result.IsFailure)
+            return Result.Failure(result.Error);
+
+        comments.Add(result.Value);
+        ModifiedOnUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result AddTags(params Guid[] tagIds)
+    {
+        if (tagIds.Length == 0 || Array.Exists(tagIds, t => t == Guid.Empty))
+            return Result.Failure(Errors.Bookmark.InvalidTag);
+
+        tags.AddRange(tagIds);
+        ModifiedOnUtc = DateTime.UtcNow;
+        return Result.Success();
     }
 }

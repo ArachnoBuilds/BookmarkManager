@@ -10,6 +10,8 @@ public static class Errors
             new("Domain.Errros.Bookmark.InvalidUrl", "The URL provided is not valid.");
         public static Error InvalidTitle =>
             new("Domain.Errors.Bookmark.InvalidTitle", "The title provided is not valid.");
+        public static Error InvalidTag =>
+            new("Domain.Errors.Bookmark.InvalidTag", "One or more tags provided are not valid.");
     }
 
     public static class Comment
