@@ -11,4 +11,12 @@ public static class Errors
         public static Error InvalidTitle =>
             new("Domain.Errors.Bookmark.InvalidTitle", "The title provided is not valid.");
     }
+
+    public static class Comment
+    {
+        public static Error InvalidContent =>
+            new("Domain.Errors.Comment.InvalidContent", "The content provided is not valid.");
+        public static Error InvalidAuthor =>
+            new("Domain.Errors.Comment.InvalidAuthor", "The author provided is not valid.");
+    }
 }
