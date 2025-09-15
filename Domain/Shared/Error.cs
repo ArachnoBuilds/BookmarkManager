@@ -9,6 +9,8 @@ public class Error(string code, string message) : IEquatable<Error>
 
     public string Message { get; } = message;
 
+    public Error[] InnerErrors { get; set; } = [];
+
     public static implicit operator string(Error error) => error.Code;
 
     public static bool operator ==(Error? a, Error? b)
@@ -37,4 +39,10 @@ public class Error(string code, string message) : IEquatable<Error>
     public override int GetHashCode() => HashCode.Combine(Code, Message);
 
     public override string ToString() => Code;
+
+    public static Error Aggregate(params IEnumerable<Error> errors) =>
+        new("Error.Aggregate", "Please check inner errors")
+        {
+            InnerErrors = [.. errors.Where(e => e != None)]
+        };
 }
