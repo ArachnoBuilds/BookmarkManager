@@ -17,7 +17,7 @@ public sealed class Bookmark : AggregateRoot, IAuditableEntity
     public IReadOnlyList<Comment> Comments => comments;
     public IReadOnlyList<Guid> Tags => tags;
 
-    private Bookmark(Guid id, string url, string title, string? description, bool isPublic)
+    private Bookmark(Guid id, string url, string title, string? description, bool isPublic, Guid[]? tagIds)
         : base(id)
     {
         Url = url;
@@ -25,9 +25,12 @@ public sealed class Bookmark : AggregateRoot, IAuditableEntity
         Description = description;
         IsPublic = isPublic;
         CreatedOnUtc = DateTime.UtcNow;
+
+        if (tagIds != null && tagIds.Length > 0)
+            tags.AddRange(tagIds);
     }
 
-    public static Result<Bookmark> Create(Guid id, string url, string title, string? description, bool isPublic)
+    public static Result<Bookmark> Create(Guid id, string url, string title, string? description, bool isPublic, Guid[]? tagIds)
     {
         if (string.IsNullOrWhiteSpace(url) ||
             !Uri.IsWellFormedUriString(url, UriKind.Absolute))
@@ -36,7 +39,10 @@ public sealed class Bookmark : AggregateRoot, IAuditableEntity
         if (string.IsNullOrWhiteSpace(title))
             return Result.Failure<Bookmark>(Errors.Bookmark.InvalidTitle);
 
-        return new Bookmark(id, url, title, description, isPublic);
+        if (tagIds != null && tagIds.Length > 0 && Array.Exists(tagIds, t => t == Guid.Empty))
+            return Result.Failure<Bookmark>(Errors.Bookmark.InvalidTag);
+
+        return new Bookmark(id, url, title, description, isPublic, tagIds);
     }
 
     public Result AddComment(Guid id, string content, Guid author)
