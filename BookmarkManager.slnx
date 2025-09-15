@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Application/Tests.Application.csproj" Id="f4dfe5ed-2ee3-40e1-ba50-72373b6780d3" />
+  </Folder>
   <Project Path="Application/Application.csproj" Id="991e7060-4df2-4f68-8a16-e895a743f929" />
   <Project Path="Domain/Domain.csproj" />
 </Solution>
