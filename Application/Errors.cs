@@ -12,5 +12,15 @@ internal static class Errors
         public static readonly Error DuplicateTitle = new(
             "Application.Errors.Bookmark.DuplicateTitle",
             "A bookmark with the same title already exists.");
+        public static readonly Error NotFound = new(
+            "Application.Errors.Bookmark.NotFound",
+            "The bookmark was not found.");
+    }
+
+    internal static class Tag
+    {
+        public static readonly Error NotFound = new(
+            "Application.Errors.Tag.NotFound",
+            "One or more tags were not found.");
     }
 }
