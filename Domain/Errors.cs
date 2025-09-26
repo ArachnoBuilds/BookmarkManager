@@ -4,6 +4,9 @@ namespace Domain;
 
 public static class Errors
 {
+    public static Error NoChangesDetected =>
+        new("Domain.Errors.NoChangesDetected", "No changes were detected to update.");
+
     public static class Bookmark
     {
         public static Error InvalidUrl =>

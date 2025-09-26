@@ -1,4 +1,5 @@
-﻿using Domain.Primitives;
+﻿using Domain.Events;
+using Domain.Primitives;
 using Domain.Shared;
 
 namespace Domain.Entities;
@@ -56,13 +57,71 @@ public sealed class Bookmark : AggregateRoot, IAuditableEntity
         return Result.Success();
     }
 
-    public Result AddTags(params Guid[] tagIds)
+    public Result UpdateTitle(string title)
     {
-        if (tagIds.Length == 0 || Array.Exists(tagIds, t => t == Guid.Empty))
+        if (Title.Equals(title, StringComparison.Ordinal))
+            return Result.Failure(Errors.NoChangesDetected);
+
+        if (string.IsNullOrWhiteSpace(title))
+            return Result.Failure<Bookmark>(Errors.Bookmark.InvalidTitle);
+
+        Title = title;
+        ModifiedOnUtc = DateTime.UtcNow;
+
+        return Result.Success();
+    }
+
+    public Result UpdateDescription(string description)
+    {
+        if (Description?.Equals(description, StringComparison.Ordinal) ?? false)
+            return Result.Failure(Errors.NoChangesDetected);
+
+        Description = description;
+        ModifiedOnUtc = DateTime.UtcNow;
+
+        return Result.Success();
+    }
+
+    public Result UpdateVisibility(bool isPublic)
+    {
+        if (IsPublic == isPublic)
+            return Result.Failure(Errors.NoChangesDetected);
+
+        IsPublic = isPublic;
+        ModifiedOnUtc = DateTime.UtcNow;
+
+        return Result.Success();
+    }
+
+    public Result AddTags(params IEnumerable<Guid> tagIds)
+    {
+        if (!tagIds.Any() || tagIds.Contains(Guid.Empty))
             return Result.Failure(Errors.Bookmark.InvalidTag);
 
-        tags.AddRange(tagIds);
+        var insertableTags = tagIds.Except(tags);
+        if (!insertableTags.Any())
+            return Result.Failure(Errors.NoChangesDetected);
+
+        tags.AddRange(insertableTags);
         ModifiedOnUtc = DateTime.UtcNow;
+        RaiseDomainEvent(new TagsAddedEvent(Id, [.. insertableTags], ModifiedOnUtc.Value));
+
+        return Result.Success();
+    }
+
+    public Result RemoveTags(params IEnumerable<Guid> tagIds)
+    {
+        if (!tagIds.Any() || tagIds.Contains(Guid.Empty))
+            return Result.Failure(Errors.Bookmark.InvalidTag);
+
+        var removableTags = tagIds.Intersect(tags);
+        if (!removableTags.Any())
+            return Result.Failure(Errors.NoChangesDetected);
+
+        tags.RemoveAll(p => removableTags.Contains(p));
+        ModifiedOnUtc = DateTime.UtcNow;
+        RaiseDomainEvent(new TagsRemovedEvent(Id, [.. removableTags], ModifiedOnUtc.Value));
+
         return Result.Success();
     }
 }
