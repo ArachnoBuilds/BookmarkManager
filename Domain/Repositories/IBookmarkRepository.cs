@@ -10,4 +10,5 @@ public interface IBookmarkRepository
     Task<Result<bool>> ExistsByUrlAsync(string url, CancellationToken cancellationToken = default);
     Task<Result<bool>> ExistsByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result> CreateAsync(Bookmark bookmark, CancellationToken cancellationToken = default);
+    Task<Result> UpdateAsync(Bookmark bookmark, CancellationToken cancellationToken = default);
 }
