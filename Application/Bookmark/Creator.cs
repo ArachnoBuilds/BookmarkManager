@@ -7,11 +7,17 @@ using BookmarkEntity = Domain.Entities.Bookmark;
 namespace Application.Bookmark;
 
 public class Creator(
+    IUnitOfWork uow,
     ITagRepository tagRepo,
     IBookmarkRepository bookmarkRepo)
 {
     public async Task<Result> DoAsync(Create command, CancellationToken cancellationToken = default)
     {
+        // begin transaction
+        var txBeginResult = await uow.BeginAsync(cancellationToken).ConfigureAwait(false);
+        if (txBeginResult.IsFailure)
+            return Result.Failure(txBeginResult.Error);
+
         // check for existing bookmark with same url or title
         List<Task<Result<bool>>> fetcherTasks =
         [
@@ -73,6 +79,11 @@ public class Creator(
         var bookmarkPersisterResult = await bookmarkRepo.CreateAsync(bookmarkCreatorResult.Value, cancellationToken).ConfigureAwait(false);
         if (bookmarkPersisterResult.IsFailure)
             return Result.Failure(bookmarkPersisterResult.Error);
+
+        // commit transaction
+        var txCommitResult = await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+        if (txCommitResult.IsFailure)
+            return Result.Failure(txCommitResult.Error);
 
         return Result.Success();
     }
